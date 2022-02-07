@@ -12,16 +12,15 @@ _start:
 	movw	%ax, %es
 	movw	%ax, %ss
 	movw	$0x7c00, %sp
-	sti
-	cld
 
 showMsg:
 // 调用0x10中断显示字符串
 	movw	$27, %cx
-	movb	$0x07, %bl		 
+	movb	$0x07, %bl	
+	movw	$0, %dx	 
 	movw	$msg1, %bp
 	movw	$0x1301, %ax	 
-	int	$0x10			 
+	int		$0x10			 
 
 // 死循环
 end:
