@@ -52,13 +52,13 @@ msg1:
 setup_packet:
 	.word 0x10  /* struct's size */
 	.word 8 /* 读多少个 sectors */
-	.word 0, DEF_SETUPSEG>>4 /* buffer address */
+	.word 0, DEF_SETUPSEG /* buffer address */
 	.quad 1 /* 从哪个 sector 开始读 */
 
 system_packet:
 	.word 0x10  /* struct's size */
 	.word DEF_SYSSIZE/512 /* 读多少个 sectors */
-	.word 0,DEF_SYSSEG>>4 /* buffer address */
+	.word 0,DEF_SYSSEG /* buffer address */
 	.quad 9 /* 从哪个 sector 开始读 */
 
 .org 510
