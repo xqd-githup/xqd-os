@@ -1,6 +1,6 @@
 #include "boot.h"
-#include "linkage.h"
 
+#define SETUP_ADDR DEF_SETUPSEG<<4
 .code16
 .text
 
@@ -42,41 +42,38 @@ setup:
 
 	lea	showSetup,%si
 	call	prtstr
-#关闭中断
+
+	#关闭中断
 	cli 
 
-# 开启A20
+	# 开启A20
 	inb	$0x92, %al			
 	orb	$02, %al			 
 	outb	%al, $0x92			 
 
-
-	xorl	%eax, %eax			# 计算GDT的基地址
-	movw	%ds, %ax			 
-	shll	$4, %eax
-	addl	$gdt, %eax
-	movl	%eax, (gdt_48+2)
-	lgdt	gdt_48				# 加载gdt
-
-
+	# 加载gdt
+	lgdt	gdt_48				
 
 	movw	$1, %ax				# protected mode (PE) bit
 	lmsw	%ax				# 进入保护模式
 
-	ljmp $8, $DEF_SETUPSEG<<4 + mov_sys
+	ljmp $0x10, $SETUP_ADDR + mov_sys
 
 
 
 .code32
 
 # 拷贝system到0x100000(1MB)
-	cld
 mov_sys:
-	movw	$0x10, %ax
+	# 重置数据段寄存器
+	movw	$0x18, %ax
 	movw 	%ax, %es
 	movw	%ax, %ds
 	movw 	%ax, %ss 
 	movl 	$0x7c00, %esp
+	
+	# 开始拷贝了
+	cld
 	movl 	$0x10000, %esi 
 	movl 	$0x100000, %edi
 	movl 	$DEF_SYSSIZE << 2, %ecx 
@@ -84,15 +81,19 @@ mov_sys:
 	movsd
 	
 
-	jmpl $8, $0x100000
+	jmpl $0x10, $0x100000
 
 
 showSetup:
 	.string "this is setup....\r\n"
 
+.ALIGN 8
 
+# GDT 结构体定义
 gdt:
 	.word	0, 0, 0, 0			# dummy
+
+	.word	0, 0, 0, 0			# unused
 
 	.word	0xFFFF				# 4Gb - (0x100000*0x1000 = 4Gb)
 	.word	0				# base address = 0
@@ -109,4 +110,4 @@ gdt:
 
 gdt_48:
 	.word	gdt_48-gdt-1				# 
-	.word	0				# gdt base  稍后通过计算设置这个值
+	.word	SETUP_ADDR+gdt				# gdt base  

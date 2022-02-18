@@ -5,7 +5,7 @@
 #define DEF_SETUPSEG	0x900
 // system段地址
 #define DEF_SYSSEG	0x1000
-// system的大小
+// system的大小(64K)
 #define DEF_SYSSIZE	0x10000
 
 
